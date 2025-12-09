@@ -1,74 +1,128 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Logistik Lab Sederhana</title>
-    
-    <style>
-        /* * CSS Dasar untuk Meniru Tampilan Tailwind * */
-        
-        /* Reset dasar */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistem Logistik Lab</title>
 
-        body {
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
-            line-height: 1.5;
-            background-color: #f1f5f9; /* bg-slate-50 */
-        }
-
-        /* Gaya Input dan Button */
-        input[type="text"],
-        input[type="number"],
-        input[type="password"],
-        select {
-            border: 1px solid #e5e7eb; /* border */
-            border-radius: 0.25rem; /* rounded */
-            padding: 0.5rem 0.75rem; /* py-2 px-3 */
-            transition: all 0.15s ease-in-out;
-            width: 100%; /* w-full */
-        }
-
-        button {
-            cursor: pointer;
-            border: none;
-            transition: background-color 0.15s ease-in-out;
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            color: white;
-            font-weight: 500;
-        }
-
-        /* Kelas utilitas penting (meniru Tailwind) */
-        .w-full { width: 100%; }
-        .text-sm { font-size: 0.875rem; }
-        .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
-        
-        /* Khusus Login Card */
-        .login-card {
-            width: 100%; 
-            max-width: 28rem; 
-            background-color: white; 
-            border-radius: 1rem; 
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            padding: 1.5rem;
-        }
-
-        /* Gaya Tombol Khusus */
-        .btn-primary { background-color: #334155; } /* bg-slate-700 */
-        .btn-primary:hover { background-color: #1e293b; } /* hover:bg-slate-800 */
-        .btn-danger { background-color: #dc2626; } /* bg-red-600 */
-        .btn-danger:hover { background-color: #b91c1c; }
-    </style>
+    <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-    <div id="app-root">
+
+    <!-- LOGIN PAGE -->
+    <div id="login-page" class="center-page">
+        <div class="card login-card">
+            <h2>Masuk Admin — Sistem Logistik Lab</h2>
+            <p class="sub">Gunakan password default: <b>admin</b></p>
+            <input id="login-pass" type="password" placeholder="Password" class="input">
+            <button onclick="login()" class="btn-primary">Masuk</button>
+
+            <p class="sub">Atau gunakan demo</p>
+            <button onclick="demoLogin()" class="btn-dark">Demo Login</button>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app" class="hidden">
+        <!-- TOP NAV -->
+        <header>
+            <div>
+                <h2>Sistem Logistik Lab — Dashboard</h2>
+                <p>Monitoring stok material dan inventaris mesin</p>
+            </div>
+            <div class="nav-right">
+                <button class="btn" onclick="exportJSON()">Backup JSON</button>
+
+                <label class="btn">
+                    Import
+                    <input type="file" id="import-file" class="hidden" onchange="importJSON(event)">
+                </label>
+
+                <span id="admin-user"></span>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- PAGE LAYOUT -->
+        <div class="layout">
+
+            <!-- SIDEBAR -->
+            <aside>
+                <button class="side-btn active" onclick="showPage('dashboard')">Dashboard</button>
+                <button class="side-btn" onclick="showPage('material')">Material</button>
+                <button class="side-btn" onclick="showPage('inventaris')">Inventaris</button>
+                <button class="side-btn" onclick="showPage('transaksi')">Transaksi</button>
+                <button class="side-btn" onclick="showPage('settings')">Settings</button>
+
+                <div class="summary-box">
+                    <h4>Ringkasan</h4>
+                    <p>Total Material: <span id="sum-material">0</span></p>
+                    <p>Total Inventaris: <span id="sum-invent">0</span></p>
+                    <p>Total Transaksi: <span id="sum-trans">0</span></p>
+                </div>
+            </aside>
+
+            <!-- MAIN CONTENT -->
+            <main>
+
+                <!-- DASHBOARD -->
+                <section id="page-dashboard" class="page active">
+                    <h3>Level Material (Top)</h3>
+                    <div id="chart" class="chart-box">Grafik placeholder</div>
+
+                    <h3>Alert Stok Rendah</h3>
+                    <div id="alert-box" class="card"></div>
+
+                    <h3>Aktivitas Terakhir</h3>
+                    <div id="recent-tx" class="card"></div>
+                </section>
+
+                <!-- MATERIAL CRUD -->
+                <section id="page-material" class="page">
+                    <h3>Master Material</h3>
+
+                    <div class="form-row">
+                        <input id="mat-id" class="input" placeholder="ID">
+                        <input id="mat-name" class="input" placeholder="Nama">
+                        <input id="mat-qty" class="input" type="number" placeholder="Qty">
+                        <button onclick="addMaterial()" class="btn-primary">Tambah</button>
+                    </div>
+
+                    <table class="table" id="table-material"></table>
+                </section>
+
+                <!-- INVENTORY CRUD -->
+                <section id="page-inventaris" class="page">
+                    <h3>Master Inventaris</h3>
+
+                    <div class="form-row">
+                        <input id="inv-id" class="input" placeholder="ID">
+                        <input id="inv-name" class="input" placeholder="Nama">
+                        <input id="inv-cat" class="input" placeholder="Kategori">
+                        <button onclick="addInvent()" class="btn-primary">Tambah</button>
+                    </div>
+
+                    <table class="table" id="table-invent"></table>
+                </section>
+
+                <!-- TRANSAKSI -->
+                <section id="page-transaksi" class="page">
+                    <h3>Daftar Transaksi</h3>
+                    <table class="table" id="table-trans"></table>
+                </section>
+
+                <!-- SETTINGS -->
+                <section id="page-settings" class="page">
+                    <h3>Settings & Info</h3>
+                    <p>Sistem ini menggunakan localStorage sebagai mock backend.</p>
+                </section>
+
+            </main>
         </div>
 
-    <script src="script.js"></script>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
